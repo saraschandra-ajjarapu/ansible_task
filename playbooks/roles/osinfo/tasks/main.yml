@@ -1,0 +1,27 @@
+- block:
+    - name: get current user
+      command: whoami
+      register: whoami
+      run_once: yes
+
+    - name: clean file
+      copy:
+          dest: "{{ OUTPUT_FILEPATH }}"
+          content: 'hostname.distribution,version,release'
+          owner: "{{ whoami.stdout }}"
+      run_once: yes
+     
+    - name: template to fill OS info
+      template:
+          src: output_file.j2
+          dest: "{{ OUTPUT_FILEPATH }}"
+      throttle: 1
+   
+    - name: get Kernal version
+      shell: |
+         echo "my custom variable is OUTPUT_FILEPATH={{ OUTPUT_FILEPATH }}" >> {{ OUTPUT_FILEPATH }} 
+         system_profiler SPSoftwareDataType >> {{ OUTPUT_FILEPATH }} 
+  
+    - debug: 
+        msg: >
+             The outputfile is {{ OUTPUT_FILEPATH }}
